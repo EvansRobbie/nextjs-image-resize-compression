@@ -171,16 +171,32 @@ export default function ImageUploader() {
   const processImage = useCallback(
     async (file: File) => {
       if (!completedCrop || !imgRef.current) return;
+      // const SMALL_IMAGE_THRESHOLD = 30 * 1024;
+      // Note: Uncomment this to optionally skip the compression step for smaller images i.e recommended les than 30kb
+      // Step 1: Check if the image is small and skip compression if it is
+      // if (file.size < SMALL_IMAGE_THRESHOLD) {
+      //   const reader = new FileReader();
+      //   reader.onload = () => {
+      //     setCompressedPreview(reader.result as string);
+      //     setCompressedSize(file.size);
+      //   };
+      //   reader.readAsDataURL(file);
+
+      //   form.setValue('cover_image', file);
+      //   form.clearErrors('cover_image');
+      //   setShowCrop(false);
+      //   return;
+      // }
 
       try {
-        // Step 1: Crop the image
+        // Step 2: Crop the image
         const croppedFile = await cropImage(
           imgRef.current,
           completedCrop,
           file.name
         );
 
-        // Step 2: Compress the cropped image
+        // Step 3: Compress the cropped image
         const options = {
           maxSizeMB: 5,
           maxWidthOrHeight: Math.max(targetWidth, targetHeight),
@@ -188,7 +204,7 @@ export default function ImageUploader() {
         };
         const compressedFile = await imageCompression(croppedFile, options);
 
-        // Step 3: Resize the compressed image
+        // Step 4: Resize the compressed image
         const resizedBlob = await resizeImage(
           compressedFile,
           targetWidth,
