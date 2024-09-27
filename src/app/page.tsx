@@ -44,6 +44,7 @@ export default function ImageUploader() {
   const [compressedSize, setCompressedSize] = useState<number | null>(null);
   const [targetWidth, setTargetWidth] = useState(600);
   const [targetHeight, setTargetHeight] = useState(400);
+  const [showCrop, setShowCrop] = useState(false);
   const [crop, setCrop] = useState<Crop>({
     unit: 'px',
     width: targetWidth,
@@ -63,6 +64,7 @@ export default function ImageUploader() {
     },
   });
 
+  // Set crop to center of image
   useEffect(() => {
     if (imgRef.current) {
       const { width, height } = imgRef.current;
@@ -206,6 +208,7 @@ export default function ImageUploader() {
 
         form.setValue('cover_image', resizedFile);
         form.clearErrors('cover_image');
+        setShowCrop(false);
       } catch (error) {
         console.error('Error processing image:', error);
         setCompressedPreview(null);
@@ -225,6 +228,7 @@ export default function ImageUploader() {
         setOriginalPreview(reader.result as string);
         setOriginalSize(file.size);
         form.setValue('cover_image', file);
+        setShowCrop(true);
       };
       reader.readAsDataURL(file);
     },
@@ -316,7 +320,7 @@ export default function ImageUploader() {
             </div>
           </div>
 
-          {originalPreview && (
+          {originalPreview && showCrop && (
             <div className='mb-4'>
               <h3 className='font-bold mb-2'>Crop Image</h3>
               <ReactCrop
@@ -325,7 +329,9 @@ export default function ImageUploader() {
                 onComplete={(c) => setCompletedCrop(c)}
                 aspect={targetWidth / targetHeight}
               >
-                <img
+                <Image
+                  width={targetWidth}
+                  height={targetHeight}
                   ref={imgRef}
                   src={originalPreview}
                   alt='Original'
@@ -351,7 +357,7 @@ export default function ImageUploader() {
                     alt='Original preview'
                     fill
                     priority
-                    className='object-contain rounded-md'
+                    className='object-cover rounded-md'
                   />
                 </div>
                 <p className='mt-2'>
